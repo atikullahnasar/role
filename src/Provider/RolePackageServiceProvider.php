@@ -27,6 +27,7 @@ class RolePackageServiceProvider extends ServiceProvider
 
         // Load views based on config
         $layout = config('role.layout', 'bootstrap');
+        // dd($layout);
         $this->loadViewsFrom(__DIR__ . '/../Resources/views/' . $layout, 'roles');
 
         // Publish migrations

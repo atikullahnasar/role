@@ -25,14 +25,15 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->ajax()){
-            dd($request->all());
+        if ($request->ajax()) {
             $roles = $this->roleService->getForOwner();
             return datatables()->of($roles)->toJson();
         }
+
         $permissions = $this->permissionService->getAllPermissionsGrouped();
         return view('roles::roles.index', compact('permissions'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -47,7 +48,6 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:beft_roles,name,NULL,id,owner_id,' . Auth::id(),
             'permissions' => 'array',
@@ -90,7 +90,6 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        // dd($request->all());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:beft_roles,name,' . $role->id . ',id,owner_id,' . Auth::id(),
             'permissions' => 'array',

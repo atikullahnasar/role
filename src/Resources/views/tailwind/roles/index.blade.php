@@ -1,318 +1,376 @@
-@extends('layout.layout')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roles Management</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-@php
-    $title = 'Roles Management';
-    $subTitle = 'Roles';
-@endphp
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-@push('styles')
+    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" />
-@endpush
 
-@section('content')
-    <div class="grid grid-cols-12">
-        <div class="col-span-12">
-            <div class="card h-full p-0 rounded-xl border-0 overflow-hidden">
-                <div
-                    class="card-header border-b border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 py-4 px-6 flex items-center flex-wrap gap-3 justify-between">
+    <!-- Custom Styles for DataTables & Components -->
+    <style>
+        /* Custom styling for DataTables to match Tailwind */
+        .dataTables_wrapper .dataTables_filter input {
+            @apply border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+        .dataTables_wrapper .dataTables_length select {
+            @apply border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+        .dataTables_paginate .paginate_button {
+            @apply px-3 py-1 ml-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100;
+        }
+        .dataTables_paginate .paginate_button.current {
+            @apply bg-blue-500 text-white hover:bg-blue-600 border-blue-500;
+        }
+        .dataTables_paginate .paginate_button.disabled {
+            @apply opacity-50 cursor-not-allowed;
+        }
+    </style>
+</head>
 
-                    <button type="button" id="showAddEditRolesModal" class="btn btn-primary ms-auto text-sm btn-sm px-3 py-3 rounded-lg flex items-center gap-2">
-                        <iconify-icon icon="ic:baseline-plus" class="icon text-xl line-height-1"></iconify-icon>
-                        Add New Role
-                    </button>
-                </div>
-                <div class="card-body p-6">
-                    <div class="table-responsive scroll-sm">
-                        <table id="roles-table"
-                            class="w-full border border-neutral-200 dark:border-neutral-600 rounded-lg border-separate">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="px-4 py-3">Name</th>
-                                    <th scope="col" class="px-4 py-3 text-center">Action</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
+<body class="bg-gray-100 p-4 md:p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">Roles Management</h3>
+            <button id="showAddEditRolesModal" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add New Role
+            </button>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast-container" class="fixed top-4 right-4 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+            <div id="showToast" class="bg-green-500 text-white font-medium py-3 px-5 rounded-lg shadow-lg flex items-center justify-between">
+                <span id="toastMessage"></span>
+                <button onclick="hideToast()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white shadow-md rounded-lg">
+            <div class="p-4 md:p-6">
+                <table id="roles-table" class="display w-full">
+                    <thead class="bg-gray-50 border-b-2 border-gray-200">
+                        <tr>
+                            <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal Add/Edit Role -->
-    <div id="addEditRolesModal" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-2xl max-h-full">
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modalTitle">
-                        Create New Role
-                    </h3>
-                    <button type="button"
-                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                        id="closeAddEditRolesModal">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                        </svg>
-                        <span class="sr-only">Close modal</span>
+    <!-- Add/Edit Role Modal -->
+    <div id="addEditRolesModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-lg bg-white">
+            <form id="roleForm">
+                @csrf
+                <input type="hidden" name="_method" id="method" value="POST">
+                <input type="hidden" name="id" id="role_id">
+                <div class="flex justify-between items-center mb-4">
+                    <h5 class="text-xl font-bold text-gray-800" id="modalTitle">Create New Role</h5>
+                    <button type="button" onclick="hideModal('addEditRolesModal')" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div class="p-4 md:p-5">
-                    <form action="" method="POST" id="roleForm">
-                        @csrf
-                        <input type="hidden" name="_method" id="method" value="POST">
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-                            <div class="col-span-12">
-                                <label class="form-label" for="name">Role Name<span>*</span></label>
-                                <div class="relative">
-                                    {{-- <input class="form-control rounded-lg bg-white dark:bg-neutral-700" name="name" id="name" type="text" placeholder="Enter Role Name"  > --}}
-                                    <input class="form-control rounded-lg bg-white dark:bg-neutral-700" name="name" id="name" type="text" placeholder="Enter role name"  >
-                                    <span class="text-red-500 text-sm mt-1 d-block" id="error-name"></span>
-                                </div>
-                            </div>
+                <div class="mb-4">
+                    <div id="editLoading" class="text-center hidden">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div id="formContent">
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Role Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter role name">
+                            <p class="text-red-500 text-xs italic mt-1" id="error-name"></p>
+                        </div>
 
-                            <div class="col-span-12">
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Permissions</h4>
-                                @foreach ($permissions as $groupName => $permissionList)
-                                    <div class="mt-4">
-                                        <h5 class="text-md font-semibold text-gray-800 dark:text-gray-200">{{ $groupName }}</h5>
-                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                                            @foreach ($permissionList as $permission)
-                                                <label class="inline-flex items-center">
-                                                    <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" class="form-checkbox rounded text-primary-600">
-                                                    <p class="ms-2 ml-2"> {{ ucfirst(explode('.', $permission->name)[1] ?? $permission->name) }} </p>
-
-                                                    {{-- <p class="ms-2 ml-2">{{ $permission->name }}</p> --}}
+                        <h6 class="text-lg font-semibold text-gray-700 mb-2">Permissions</h6>
+                        <div class="mb-4" id="permissions-list">
+                            @foreach ($permissions as $groupName => $permissionList)
+                                <div class="mb-3">
+                                    <strong class="text-gray-600">{{ $groupName }}</strong>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                        @foreach ($permissionList as $permission)
+                                            <div class="flex items-center">
+                                                <input class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="perm-{{ $permission->id }}">
+                                                <label class="ml-2 block text-sm text-gray-700" for="perm-{{ $permission->id }}">
+                                                    {{ ucfirst(explode('.', $permission->name)[1] ?? $permission->name) }}
                                                 </label>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
-                            </div>
-                            <div id="error-permissions" class="text-red-500 text-sm mt-1"></div>
-
+                                </div>
+                            @endforeach
+                            <p class="text-red-500 text-xs italic mt-1" id="error-permissions"></p>
                         </div>
-                        <div class="flex justify-end">
-                            <button type="submit" class="btn btn-primary">
-                                Save
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+                <div class="flex items-center justify-end gap-2 pt-4 border-t">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300" id="submitBtn">
+                        <span class="submit-text">Save Role</span>
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                    <button type="button" onclick="hideModal('addEditRolesModal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirmationModal" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 ">
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <button type="button"
-                    class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                    data-modal-hide="confirmationModal">
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 14 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                    </svg>
-                    <span class="sr-only">Close modal</span>
-                </button>
-                <div class="p-4 md:p-5 text-center">
-                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this role?</h3>
-                    <button type="button" id="confirmDeleteBtn"
-                        class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
-                        Yes, I'm sure
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Are you sure?</h3>
+                <p class="text-sm text-gray-500 mb-4">Do you really want to delete this role? This action cannot be undone.</p>
+                <div class="flex justify-center gap-2">
+                    <button type="button" id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                        <span class="delete-text">Yes, delete</span>
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                     </button>
-                    <button type="button"
-                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                        data-modal-hide="confirmationModal">No, cancel</button>
+                    <button type="button" onclick="hideModal('confirmationModal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-@endsection
 
-@push('scripts')
-    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
-    <script>
-        $(document).ready(function() {
-            const form = $('#roleForm');
-            const methodInput = form.find("input[name='_method']");
-            const modalTitle = $('#modalTitle');
-            const addEditModal = new Modal($('#addEditRolesModal')[0], {
-                backdrop: 'static', // prevents outside click from closing
-                keyboard: false     // optional: prevents ESC key from closing
-            });
-            const confirmationModal = new Modal($('#confirmationModal')[0]);
+ <!-- JS Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+
+<script>
+    // --- Global Utility Functions ---
+    // These functions are moved outside the $(document).ready() block
+    // so they can be called from inline onclick attributes in the HTML.
+
+    function showToast(message, type = 'success') {
+        const toastContainer = $('#toast-container');
+        const toastElement = $('#showToast');
+        const toastMessage = $('#toastMessage');
+
+        toastMessage.text(message);
+        toastElement.removeClass('bg-green-500 bg-red-500').addClass(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+
+        toastContainer.removeClass('opacity-0 pointer-events-none').addClass('opacity-100');
+
+        setTimeout(hideToast, 3000);
+    }
+
+    function hideToast() {
+        const toastContainer = $('#toast-container');
+        toastContainer.removeClass('opacity-100').addClass('opacity-0');
+        setTimeout(() => {
+            toastContainer.addClass('pointer-events-none');
+        }, 300);
+    }
+
+    function showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function hideModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
 
 
-            let clearModal = 0;
+ $(document).ready(function() {
+    // --- Cache DOM Elements ---
+    const roleForm = $('#roleForm');
+    const methodInput = $('#method');
+    const modalTitle = $('#modalTitle');
+    const formContent = $('#formContent');
+    const editLoading = $('#editLoading');
+    const submitBtn = $('#submitBtn');
+    const confirmDeleteBtn = $('#confirmDeleteBtn');
+    let currentDeleteId = null;
 
-            const table = $('#roles-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('admin.roles.index') }}",
-                columns: [
-                    { data: "name", name: "name" },
-                    {
-                        data: "id",
-                        name: "action",
-                        orderable: false,
-                        searchable: false,
-                        render: function(data, type, row) {
-                            return `<div class="flex items-center gap-3 justify-center">
-                                <button type="button" data-id="${data}" class="edit-btn bg-success-100 dark:bg-success-600/25 text-success-600 dark:text-success-400 bg-hover-success-200 font-medium w-10 h-10 flex justify-center items-center rounded-full" title="Edit">
-                                    <iconify-icon icon="lucide:edit" class="menu-icon"></iconify-icon>
-                                </button>
-                                <button type="button" data-id="${data}" class="delete-btn bg-danger-100 dark:bg-danger-600/25 hover:bg-danger-200 text-danger-600 dark:text-danger-500 font-medium w-10 h-10 flex justify-center items-center rounded-full" title="Delete">
-                                    <iconify-icon icon="fluent:delete-24-regular" class="menu-icon"></iconify-icon>
-                                </button>
-                            </div>`;
-                        }
-                    }
-                ],
-                createdRow: function(row, data, dataIndex) {
-                    $(row).find('.edit-btn').on('click', () => editRole(data.id));
-                    $(row).find('.delete-btn').on('click', () => showDeleteConfirmation(data.id));
+    // --- Setup AJAX ---
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // --- Initialize DataTables ---
+    const table = $('#roles-table').DataTable({
+        ajax: "/beft/roles",
+        columns: [
+            { data: "name", name: "name" },
+            {
+                data: "id",
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    return `
+                        <div class="flex justify-center gap-2">
+                            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm edit-btn" data-id="${data}">Edit</button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm delete-btn" data-id="${data}">Delete</button>
+                        </div>
+                    `;
                 }
-            });
-
-            $('#showAddEditRolesModal').on('click', function() {
-                if(clearModal == 1){
-                    form[0].reset();
-                    clearModal = 0;
-                    // Clear previous errors
-                    form.find('span[id^="error-"]').text('');
-                    $('#error-permissions').text('');
-                }
-                form.attr('action', "{{ route('admin.roles.store') }}");
-                methodInput.val("POST");
-                modalTitle.text("Create New Role");
-                addEditModal.show();
-            });
-
-            $('#closeAddEditRolesModal').on('click', function() {
-                addEditModal.hide();
-            });
-
-            $('[data-modal-hide="addEditRolesModal"]').on('click', () => addEditModal.hide());
-            $('[data-modal-hide="confirmationModal"]').on('click', () => confirmationModal.hide());
-
-            function editRole(id) {
-                $.ajax({
-                    url: `/admin/roles/${id}/edit`,
-                    method: 'GET',
-                    success: function(data) {
-
-                        // Clear previous errors
-                        form.find('span[id^="error-"]').text('');
-                        $('#error-permissions').text('');
-
-                        form.attr('action', `/admin/roles/${id}`);
-                        methodInput.val("POST");
-                        form.find("#method").val('PUT');
-                        form.find("#id").val(data.id);
-                        form.find("#name").val(data.name);
-
-                        form.find(`input[name="permissions[]"]`).prop('checked', false);
-                        data.permissions.forEach(function(permission) {
-                            form.find(`input[name="permissions[]"][value="${permission.id}"]`).prop('checked', true);
-                        });
-
-                        modalTitle.text("Edit Role");
-                        addEditModal.show();
-                        clearModal =1;
-                    },
-                    error: function() {
-                        showToast('error', "Failed to load role data.");
-                    }
-                });
             }
+        ]
+    });
 
-            function showDeleteConfirmation(id) {
-                $('#confirmDeleteBtn').data('id', id);
-                confirmationModal.show();
-            }
+    // --- Local Utility Functions ---
 
-            $('#confirmDeleteBtn').on('click', function() {
-                const id = $(this).data('id');
-                confirmationModal.hide();
+    function setLoadingState(button, loading = true) {
+        const textSpan = button.find('span').first();
+        const spinner = button.find('svg');
+        if (loading) {
+            button.prop('disabled', true);
+            textSpan.addClass('hidden');
+            spinner.removeClass('hidden');
+        } else {
+            button.prop('disabled', false);
+            textSpan.removeClass('hidden');
+            spinner.addClass('hidden');
+        }
+    }
 
-                $.ajax({
-                    url: `/admin/roles/${id}`,
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    success: function(data) {
-                        if(data.success) {
-                            table.ajax.reload();
-                            showToast('success', data.message);
-                        } else {
-                            showToast('error', data.message);
-                        }
-                    },
-                    error: function() {
-                        showToast('error', "Error deleting role.");
-                    }
-                });
-            });
+    function resetForm() {
+        roleForm[0].reset();
+        methodInput.val('POST');
+        modalTitle.text('Create New Role');
+        $('#role_id').val('');
+        roleForm.find('p[id^="error-"]').text('');
+        roleForm.find('input, select').removeClass('border-red-500');
+    }
 
-            form.on('submit', function(e) {
-                e.preventDefault();
-                const url = form.attr('action');
-                const method = methodInput.val();
+    // --- Event Handlers ---
 
-                // Clear previous errors
-                form.find('span[id^="error-"]').text('');
-                $('#error-permissions').text('');
+    // Show add role modal
+    $('#showAddEditRolesModal').on('click', function() {
+        resetForm();
+        showModal('addEditRolesModal');
+    });
 
-                $.ajax({
-                    url: url,
-                    method: method,
-                    data: form.serialize(),
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    success: function(data) {
-                        if (data.success) {
-                            addEditModal.hide();
-                            table.ajax.reload();
-                            form[0].reset();
-                            clearModal = 0;
-                            showToast('success', data.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 422) { // Validation error
-                            let errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(field) {
-                                if(field === 'permissions') {
-                                    $('#error-permissions').text(errors[field][0]);
-                                } else {
-                                    $(`#error-${field}`).text(errors[field][0]);
-                                }
-                            });
-                            showToast('error', "Please fix the highlighted errors.");
-                        } else {
-                            showToast('error', xhr.responseJSON?.message || "An error occurred while submitting the form.");
-                        }
-                    }
-                });
-            });
+    // Edit role
+    $('#roles-table').on('click', '.edit-btn', function() {
+        const id = $(this).data('id');
+        resetForm();
+        modalTitle.text('Edit Role');
 
-            form.find("input, select").on("input change", function() {
-                const field = $(this).attr("name");
-                if(field === 'permissions[]') {
-                    $('#error-permissions').text('');
-                } else {
-                    $(`#error-${field}`).text('');
-                }
-            });
+        formContent.addClass('hidden');
+        editLoading.removeClass('hidden');
+        showModal('addEditRolesModal');
 
+        $.get(`/beft/roles/${id}/edit`, function(data) {
+            $('#role_id').val(data.id);
+            $('#name').val(data.name);
+            methodInput.val('PUT');
+            data.permissions.forEach(p => $(`input[name="permissions[]"][value="${p.id}"]`).prop('checked', true));
+        }).fail(function() {
+            showToast('Error fetching role data.', 'error');
+            hideModal('addEditRolesModal');
+        }).always(function() {
+            formContent.removeClass('hidden');
+            editLoading.addClass('hidden');
         });
-    </script>
-@endpush
+    });
+
+    // Delete role
+    $('#roles-table').on('click', '.delete-btn', function() {
+        currentDeleteId = $(this).data('id');
+        showModal('confirmationModal');
+    });
+
+    $('#confirmDeleteBtn').on('click', function() {
+        setLoadingState(confirmDeleteBtn, true);
+        $.ajax({
+            url: `/beft/roles/${currentDeleteId}`,
+            method: 'DELETE',
+            success: function(data) {
+                table.ajax.reload();
+                hideModal('confirmationModal');
+                showToast(data.message, 'success');
+            },
+            error: function(xhr) {
+                const message = xhr.responseJSON?.message || 'An error occurred while deleting the role.';
+                showToast(message, 'error');
+            },
+            complete: function() {
+                setLoadingState(confirmDeleteBtn, false);
+            }
+        });
+    });
+
+    // Clear errors on user input
+    $('#name').on('input', function() {
+        $(this).removeClass('border-red-500');
+        $('#error-name').text('');
+    });
+
+    $('input[name="permissions[]"]').on('change', function() {
+        $('#error-permissions').text('');
+    });
+
+    // Submit form
+    roleForm.on('submit', function(e) {
+        e.preventDefault();
+        setLoadingState(submitBtn, true);
+
+        const id = $('#role_id').val();
+        const url = id ? `/beft/roles/${id}` : "/beft/roles";
+        const method = methodInput.val();
+
+        $.ajax({
+            url: url,
+            method: method,
+            data: roleForm.serialize(),
+            success: function(data) {
+                table.ajax.reload();
+                hideModal('addEditRolesModal');
+                showToast(data.message, 'success');
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    roleForm.find('input, select').removeClass('border-red-500');
+                    roleForm.find('p[id^="error-"]').text('');
+
+                    Object.keys(errors).forEach(function(field) {
+                        const input = $(`[name="${field}"]`);
+                        input.addClass('border-red-500');
+                        $(`#error-${field}`).text(errors[field][0]);
+                    });
+                } else {
+                    const message = xhr.responseJSON?.message || 'An error occurred.';
+                    showToast(message, 'error');
+                }
+            },
+            complete: function() {
+                setLoadingState(submitBtn, false);
+            }
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>

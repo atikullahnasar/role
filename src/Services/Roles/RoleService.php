@@ -16,7 +16,6 @@ class RoleService implements RoleServiceInterface
     {
         $role = $this->roleRepository->create($data);
         $role->permissions()->sync($permissions);
-        dd($role);
         return $role;
     }
 
