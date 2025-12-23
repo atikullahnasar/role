@@ -51,6 +51,14 @@ php artisan vendor:publish --tag=role-config
 ```bash
 php artisan migrate
 ```
+and then **Run the seeder independently**
+
+If you prefer not to modify your `DatabaseSeeder.php`, you can run the seeder directly from the command line:
+
+```bash
+php artisan db:seed --class="atikullahnasar\setting\Database\Seeders\CountrySeeder"
+```
+
 
 ## Usage
 
