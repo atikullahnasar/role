@@ -71,7 +71,8 @@ After installation, you can access the role management through the following URL
 
 ## Configuration
 
-After publishing the config file, you can customize the package settings in the `config/role.php` file.
+After publishing the config file, you can customize the package settings in the `config/role.php` file. 
+here you can decide which(tailwind/bootstrap) one want to use.
 
 ## Contributing
 
