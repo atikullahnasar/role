@@ -1,17 +1,6 @@
+# Laravel Role Package
 
-
-# Laravel Blog Package
-
-A simple and flexible Laravel package for managing blog posts with built-in migrations, routes, and admin panel integration.
-
-## Features
-
-- Blog post management
-- Category management
-- Built-in migrations
-- Pre-configured routes
-- Admin panel integration
-- Customizable templates
+A simple and flexible Laravel package for managing Role posts with built-in migrations, routes.
 
 ## Prerequisites
 
@@ -30,7 +19,7 @@ Add the following inside your `composer.json` file:
 "repositories": [
     {
         "type": "vcs",
-        "url": "https://github.com/atikullahnasar/blog"
+        "url": "https://github.com/atikullahnasar/role"
     }
 ]
 ```
@@ -40,13 +29,13 @@ Save the file after adding this.
 ### Step 1: Install the Package
 
 ```bash
-composer require atikullahnasar/blog:dev-main
+composer require atikullahnasar/role:dev-main
 ```
 
 ### Step 2: Publish the Migrations
 
 ```bash
-php artisan vendor:publish --provider="atikullahnasar\blog\Provider\BlogPackageServiceProvider" --tag=blog-migrations
+php artisan vendor:publish --provider="atikullahnasar\role\Provider\RolePackageServiceProvider" --tag=role-migrations
 ```
 
 ### Step 2.1: Publish the Config File
@@ -54,7 +43,7 @@ php artisan vendor:publish --provider="atikullahnasar\blog\Provider\BlogPackageS
 This allows you to choose which template you want to use:
 
 ```bash
-php artisan vendor:publish --tag=blog-config
+php artisan vendor:publish --tag=role-config
 ```
 
 ### Step 3: Run the Migrations
@@ -65,19 +54,16 @@ php artisan migrate
 
 ## Usage
 
-After installation, you can access the blog management through the following URLs:
+After installation, you can access the role management through the following URLs:
 
-1. `/beft/blog-categories` - Manage blog categories
-2. `/beft/blogs` - Manage blog posts
+1. `/beft/roles` - Manage role 
 
 ### Example URLs
-
-1. `http://example.com/beft/blog-categories`
-2. `http://example.com/beft/blogs`
+ `http://example.com/beft/roles`
 
 ## Configuration
 
-After publishing the config file, you can customize the package settings in the `config/blog.php` file.
+After publishing the config file, you can customize the package settings in the `config/role.php` file.
 
 ## Contributing
 
