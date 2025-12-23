@@ -16,6 +16,7 @@ class RoleService implements RoleServiceInterface
     {
         $role = $this->roleRepository->create($data);
         $role->permissions()->sync($permissions);
+        dd($role);
         return $role;
     }
 
@@ -39,7 +40,7 @@ class RoleService implements RoleServiceInterface
 
     public function getForOwner()
     {
-        $ownerId = auth()->user()->owner_id ?? auth()->user()->id;
+        $ownerId = auth()->user()->id;
         return $this->roleRepository->getForOwner($ownerId);
     }
 }

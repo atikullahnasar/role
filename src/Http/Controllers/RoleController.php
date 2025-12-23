@@ -26,11 +26,12 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         if($request->ajax()){
+            dd($request->all());
             $roles = $this->roleService->getForOwner();
             return datatables()->of($roles)->toJson();
         }
         $permissions = $this->permissionService->getAllPermissionsGrouped();
-        return view('roles::index', compact('permissions'));
+        return view('roles::roles.index', compact('permissions'));
     }
 
     /**
@@ -48,9 +49,9 @@ class RoleController extends Controller
     {
         // dd($request->all());
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:roles,name,NULL,id,owner_id,' . Auth::id(),
+            'name' => 'required|string|max:255|unique:beft_roles,name,NULL,id,owner_id,' . Auth::id(),
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id',
+            'permissions.*' => 'exists:beft_permissions,id',
         ], [
             'name.unique' => 'This role name already exists for your account.'
         ]);
@@ -91,9 +92,9 @@ class RoleController extends Controller
     {
         // dd($request->all());
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id . ',id,owner_id,' . Auth::id(),
+            'name' => 'required|string|max:255|unique:beft_roles,name,' . $role->id . ',id,owner_id,' . Auth::id(),
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id',
+            'permissions.*' => 'exists:beft_permissions,id',
         ], [
             'name.unique' => 'This role name already exists for your account.'
         ]);
