@@ -1,9 +1,3 @@
-
-
-Of course! Here is a professionally rewritten version of your `README.md` file. It's structured for clarity, provides better explanations, and has a more polished tone to help users understand and install your package with ease.
-
-***
-
 # Laravel Role & Permission Management
 
 A simple yet powerful Laravel package for managing roles and permissions with a clean, intuitive admin panel. It provides built-in migrations, routes, and views to get you started quickly.
