@@ -8,6 +8,7 @@
 
     <!-- Tailwind CSS -->
     {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
+    <!-- CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- DataTables CSS -->
@@ -62,8 +63,8 @@
                 <table id="roles-table" class="display w-full">
                     <thead class="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
-                            <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            <th class="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider"><span class="flex justify-center">Action</span></th>
                         </tr>
                     </thead>
                 </table>
