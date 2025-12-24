@@ -114,7 +114,7 @@ return [
     | Supported options: "tailwind", "bootstrap"
     |
     */
-    'ui_framework' => 'tailwind', // or 'bootstrap'
+    'layout' => 'tailwind', // or 'bootstrap'
 ];
 ```
 
