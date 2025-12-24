@@ -2,7 +2,9 @@
 
 namespace atikullahnasar\role\Repositories\Permissions;
 
-interface PermissionRepositoryInterface
+use atikullahnasar\role\Repositories\BaseRepositoryInterface;
+
+interface PermissionRepositoryInterface extends BaseRepositoryInterface
 {
     public function getAllPermissionsGrouped();
 }

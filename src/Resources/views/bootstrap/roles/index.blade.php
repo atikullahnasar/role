@@ -13,7 +13,12 @@
 
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold">Roles Management</h3>
+            <div class="d-flex gap-2">
+                <h3 class="fw-bold text-primary" ><a href="{{url('/beft/roles')}}">Roles Management</a></h3>
+                @if(auth()->user()->role === 'superAdmin')
+                <h3 class="fw-bold "> <a class="text-black" href="{{url('/beft/permissions')}}"> Permission Management</a></h3>
+                @endif
+            </div>
             <button id="showAddEditRolesModal" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Add New Role
             </button>

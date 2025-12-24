@@ -35,22 +35,18 @@
     </style>
 </head>
 
-<body class="bg-gray-100 p-4 md:p-6">
+<body class="bg-white p-4 md:p-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto p-4">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div class="flex gap-2">
-                <h3 class="text-2xl font-bold text-blue-800 underline">Roles Management</h3>
-                @if(auth()->user()->role === 'superAdmin')
-                <h3 class="text-2xl font-bold text-gray-800 underline">
-                    <a href="{{url('/beft/permissions')}}">Permission Management</a>
-                </h3>
-                @endif
+                <h3 class="text-2xl font-bold text-gray-800 underline"> <a href="{{url('/beft/roles')}}"> Roles Management</a></h3>
+                <h3 class="text-2xl font-bold text-blue-800 underline">Permission Management</h3>
             </div>
             <button id="showAddEditRolesModal" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Add New Role
+                Add New Permission
             </button>
         </div>
 
@@ -65,12 +61,13 @@
         </div>
 
         <!-- Main Card -->
-        <div class="bg-white shadow-md rounded-lg">
+        <div class="bg-gray-100 shadow-md rounded-lg">
             <div class="p-4 md:p-6">
                 <table id="roles-table" class="display w-full">
                     <thead class="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
                             <th class="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Group Name</th>
                             <th class="p-3 text-xs font-medium text-gray-500 uppercase tracking-wider"><span class="flex justify-center">Action</span></th>
                         </tr>
                     </thead>
@@ -87,7 +84,7 @@
                 <input type="hidden" name="_method" id="method" value="POST">
                 <input type="hidden" name="id" id="role_id">
                 <div class="flex justify-between items-center mb-4">
-                    <h5 class="text-xl font-bold text-gray-800" id="modalTitle">Create New Role</h5>
+                    <h5 class="text-xl font-bold text-gray-800" id="modalTitle">Create New Permission</h5>
                     <button type="button" onclick="hideModal('addEditRolesModal')" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
@@ -100,35 +97,20 @@
                     </div>
                     <div id="formContent">
                         <div class="mb-4">
-                            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Role Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" id="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter role name">
+                            <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Permission Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter permission name">
                             <p class="text-red-500 text-xs italic mt-1" id="error-name"></p>
                         </div>
-
-                        <h6 class="text-lg font-semibold text-gray-700 mb-2">Permissions</h6>
-                        <div class="mb-4" id="permissions-list">
-                            @foreach ($permissions as $groupName => $permissionList)
-                                <div class="mb-3">
-                                    <strong class="text-gray-600">{{ $groupName }}</strong>
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                                        @foreach ($permissionList as $permission)
-                                            <div class="flex items-center">
-                                                <input class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="perm-{{ $permission->id }}">
-                                                <label class="ml-2 block text-sm text-gray-700" for="perm-{{ $permission->id }}">
-                                                    {{ ucfirst(explode('.', $permission->name)[1] ?? $permission->name) }}
-                                                </label>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endforeach
-                            <p class="text-red-500 text-xs italic mt-1" id="error-permissions"></p>
+                        <div class="mb-4">
+                            <label for="group_name" class="block text-gray-700 text-sm font-bold mb-2">Permission Group Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="group_name" id="group_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter permission name">
+                            <p class="text-red-500 text-xs italic mt-1" id="error-group_name"></p>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center justify-end gap-2 pt-4 border-t">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300" id="submitBtn">
-                        <span class="submit-text">Save Role</span>
+                        <span class="submit-text">Save Permission</span>
                         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -150,7 +132,7 @@
                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Are you sure?</h3>
-                <p class="text-sm text-gray-500 mb-4">Do you really want to delete this role? This action cannot be undone.</p>
+                <p class="text-sm text-gray-500 mb-4">Do you really want to delete this Permission? This action cannot be undone.</p>
                 <div class="flex justify-center gap-2">
                     <button type="button" id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         <span class="delete-text">Yes, delete</span>
@@ -226,9 +208,15 @@
 
     // --- Initialize DataTables ---
     const table = $('#roles-table').DataTable({
-        ajax: "/beft/roles",
+        ajax: "/beft/permissions",
         columns: [
-            { data: "name", name: "name" },
+            { data: "name", name: "name",
+                render: function(data) {
+                    let parts = data.split('.');
+                    return parts.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                }
+            },
+            { data: "group_name", name: "group_name" },
             {
                 data: "id",
                 orderable: false,
@@ -264,7 +252,7 @@
     function resetForm() {
         roleForm[0].reset();
         methodInput.val('POST');
-        modalTitle.text('Create New Role');
+        modalTitle.text('Create New Permission');
         $('#role_id').val('');
         roleForm.find('p[id^="error-"]').text('');
         roleForm.find('input, select').removeClass('border-red-500');
@@ -282,19 +270,22 @@
     $('#roles-table').on('click', '.edit-btn', function() {
         const id = $(this).data('id');
         resetForm();
-        modalTitle.text('Edit Role');
+        modalTitle.text('Edit Permission');
 
         formContent.addClass('hidden');
         editLoading.removeClass('hidden');
         showModal('addEditRolesModal');
 
-        $.get(`/beft/roles/${id}/edit`, function(data) {
+        $.get(`/beft/permissions/${id}/edit`, function(data) {
             $('#role_id').val(data.id);
-            $('#name').val(data.name);
+            let parts = data.name.split('.');
+            $('#name').val(parts[1] ?? data.name);
+
+            //  $('#name').val(data.name);
+            $('#group_name').val(data.group_name);
             methodInput.val('PUT');
-            data.permissions.forEach(p => $(`input[name="permissions[]"][value="${p.id}"]`).prop('checked', true));
         }).fail(function() {
-            showToast('Error fetching role data.', 'error');
+            showToast('Error fetching permission data.', 'error');
             hideModal('addEditRolesModal');
         }).always(function() {
             formContent.removeClass('hidden');
@@ -311,7 +302,7 @@
     $('#confirmDeleteBtn').on('click', function() {
         setLoadingState(confirmDeleteBtn, true);
         $.ajax({
-            url: `/beft/roles/${currentDeleteId}`,
+            url: `/beft/permissions/${currentDeleteId}`,
             method: 'DELETE',
             success: function(data) {
                 table.ajax.reload();
@@ -332,11 +323,9 @@
     $('#name').on('input', function() {
         $(this).removeClass('border-red-500');
         $('#error-name').text('');
+        $('#error-group_name').text('');
     });
 
-    $('input[name="permissions[]"]').on('change', function() {
-        $('#error-permissions').text('');
-    });
 
     // Submit form
     roleForm.on('submit', function(e) {
@@ -344,7 +333,7 @@
         setLoadingState(submitBtn, true);
 
         const id = $('#role_id').val();
-        const url = id ? `/beft/roles/${id}` : "/beft/roles";
+        const url = id ? `/beft/permissions/${id}` : "/beft/permissions";
         const method = methodInput.val();
 
         $.ajax({

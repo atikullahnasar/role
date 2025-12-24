@@ -8,4 +8,5 @@ class Permission extends Model
 {
     protected $table = 'beft_permissions';
     protected $fillable = ['name', 'group_name'];
+
 }

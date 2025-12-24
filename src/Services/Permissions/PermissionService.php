@@ -13,8 +13,36 @@ class PermissionService implements PermissionServiceInterface
         $this->permissionRepository = $permissionRepository;
     }
 
+    public function create(array $data)
+    {
+        $role = $this->permissionRepository->create($data);
+        return $role;
+    }
+
+    public function update($id, array $data)
+    {
+        return $this->permissionRepository->update($id, $data);
+    }
+
+    public function delete($id)
+    {
+        return $this->permissionRepository->delete($id);
+    }
+
+    public function find($id)
+    {
+        return $this->permissionRepository->find($id);
+    }
+
+    public function all()
+    {
+        return $this->permissionRepository->all();
+    }
+
+
     public function getAllPermissionsGrouped()
     {
         return $this->permissionRepository->getAllPermissionsGrouped();
     }
+
 }
